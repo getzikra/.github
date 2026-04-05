@@ -12,10 +12,10 @@ Zikra is a self-hosted memory layer for Claude Code. Every decision, error, and 
 |---|---|---|---|---|
 | Self-hosted | ✅ | ✅ | ✅ | ❌ |
 | Backend | PostgreSQL + pgvector | SQLite | SQLite/file | Cloud |
-| Vector / semantic search | ✅ | ❌ | ❌ | ✅ (cloud) |
+| Vector / semantic search | ✅ | ✅ | ❌ | ✅ (cloud) |
 | Webhook support | ✅ n8n | ❌ | ❌ | ❌ |
 | n8n integration | ✅ native | ❌ | ❌ | ❌ |
-| Confidence decay | ✅ | ❌ | ❌ | ❌ |
+| Confidence decay | ✅ | ✅ | ❌ | ❌ |
 | Free | ✅ | ✅ | ✅ | Freemium |
 
 ---
