@@ -1,97 +1,88 @@
-# Zikra — Shared Memory for Claude Code, Gemini CLI & Codex
+Zikra — Shared AI Memory for Claude Code, Gemini CLI, Codex & Any LLM Agent
 
-> Your team uses different AI tools. None of them share memory by default. Zikra fixes that.
+One memory pool. Every AI tool. Every machine. Every teammate.
 
-Zikra is a self-hosted memory layer that works across **Claude Code, Gemini CLI, Codex, and any agent that can send a POST request**. Decisions, errors, architecture notes, and requirements are stored once and surfaced automatically — to every agent, on every machine, for every team member.
+Show Image
+Show Image
+Show Image
 
-One webhook. One token. One shared context pool. No cloud. No SaaS. Your data stays where you put it.
+What Is Zikra?
+Zikra is a self-hosted shared memory layer for AI coding agents. It gives Claude Code, Gemini CLI, OpenAI Codex, ChatGPT, and any agent that can send a POST request a single, persistent, searchable memory pool — shared across tools, machines, and team members.
+No cloud lock-in. No SaaS subscriptions. Your data stays on your infrastructure.
 
----
+The Problem Zikra Solves
+Your team uses different AI tools. None of them share memory by default.
 
-## Who it's for
+One developer uses Claude Code. Another uses Gemini CLI. Another uses Codex.
+Every session starts from zero. Every agent re-asks the same questions.
+Architecture decisions, error resolutions, and schema changes get re-explained dozens of times.
+Context resets mid-session and everything is lost.
 
-- **Teams** where one person uses Claude Code, another uses Gemini CLI, another uses Codex — and they're constantly re-explaining context to each other
-- **Solo developers** who switch between AI tools and hate starting from scratch every session
-- **Any workflow** where an AI agent needs to know what another agent decided last week
+Zikra fixes this. One webhook. One token. One shared context pool — automatically injected at the start of every session, automatically saved at the end.
 
----
+How It Works
+Claude Code  ──┐
+Gemini CLI   ──┼──▶  Zikra (MCP + webhook)  ──▶  PostgreSQL + pgvector
+Codex CLI    ──┘
+ChatGPT      ──┘          One memory pool. Every agent reads and writes it.
+Any agent ────────────────┘
 
-## How it works
-Claude Code ──┐
-Gemini CLI  ──┼──▶  Zikra (MCP + webhook)  ──▶  PostgreSQL + pgvector
-Codex CLI   ──┘          ↑
-Any agent ────────────────┘    One memory pool. Every agent reads and writes it.
+Save: One POST to store a decision, error fix, schema, or requirement.
+Search: One POST for hybrid semantic + keyword retrieval — finds by meaning, not exact match.
+Auto-hooks: Stop hook fires at session end. PreCompact hook saves before context resets. You never type "save this."
+Auto-inject: Every new session gets the same shared context injected automatically.
 
-One POST to save. One POST to search. Hooks fire automatically at session end — 
-you never type "save this." At the start of every session, every agent gets 
-the same shared context injected automatically.
 
----
+Features
+FeatureWhat it doesCross-platform memoryClaude Code, Gemini CLI, Codex, ChatGPT — same webhook, same token, same memory poolTeam shared contextEvery developer on every machine reads and writes the same pool. No silos.Role-based accessOwner, collaborator, guest — enforced at the router. Each person gets a scoped token.Hybrid search70% semantic vector + 30% keyword. Finds by meaning, not exact match.Confidence decayMemories age automatically. Errors decay in 30d, decisions in 90d, schemas in 180d. No manual cleanup.Requirements pipelineWrite a requirement in any AI. Owner promotes it. Developer pulls and executes it. Full traceability.Auto-save hooksStop hook fires when any session ends. PreCompact hook saves before context resets.Active runs tableSee which machine is running which prompt in real time across your team.Session trackingEvery run logged — tokens, cost, files modified, linked to the prompt that triggered it.Schema storageStore DB schema per project. Any agent pulls the current version before touching backend code.MCP nativeClaude Code and ChatGPT connect via native MCP. No custom integration needed.Self-documenting APIUnknown command returns the full reference with examples. No external docs needed.
 
-## Features
+Who It's For
+Development teams where different people use different AI coding tools and constantly re-explain context to each agent or each other.
+Solo developers who switch between Claude Code, Gemini CLI, and ChatGPT and are tired of starting from scratch every session.
+Any agentic workflow where one AI agent needs to know what another decided last week, on another machine, or in another tool.
 
-| Feature | What it does |
-|---|---|
-| **Cross-platform memory** | Claude Code, Gemini CLI, Codex, ChatGPT — same webhook, same token, same memory pool |
-| **Team shared context** | Every developer on every machine reads and writes the same pool. No silos. |
-| **Role-based access** | Owner, collaborator, guest — enforced at the router. Each person gets a scoped token. |
-| **Hybrid search** | 70% semantic vector + 30% keyword. Finds by meaning, not exact match. |
-| **Confidence decay** | Memories age automatically. Errors decay in 30d, decisions in 90d, schemas in 180d. No manual cleanup. |
-| **Requirements pipeline** | Write a requirement in any AI. Owner promotes it. Developer pulls and executes it. Full traceability. |
-| **Auto-save hooks** | Stop hook fires when any session ends. PreCompact hook saves before context resets. |
-| **Active runs table** | See which machine is running which prompt in real time across your team. |
-| **Session tracking** | Every run logged — tokens, cost, files modified, linked to the prompt that triggered it. |
-| **Schema storage** | Store DB schema per project. Any agent pulls current version before touching backend code. |
-| **Self-documenting API** | Unknown command returns full reference with examples. No external docs needed. |
-| **MCP native** | Claude connects via MCP trigger. No custom integration. |
+Quick Start
+Fetch the setup guide and follow every instruction in it:
+bash# Full installation guide
+# Fetch: https://raw.githubusercontent.com/getzikra/zikra/main/prompts/g_zikra.md
+Stack: PostgreSQL + pgvector + n8n + FastAPI + MCP server
+Full setup typically takes 30–60 minutes. Once running, every AI agent you connect gets shared memory automatically.
 
----
+Connecting Your AI Tools
+ToolConnection methodClaude CodeMCP server (native)ChatGPTRemote MCP connector via Settings → AppsGemini CLIWebhook POSTCodex CLIWebhook POSTAny agentHTTP POST — one endpoint, one token
 
-## Quick Start
+Memory Types
+Zikra organizes memory by type so agents always retrieve the right context:
+TypeDescriptionDefault decaydecisionArchitecture choices, design patterns90 dayserrorBug fixes, root causes, resolutions30 daysschemaDatabase schemas per project180 daysrequirementFeature requirements with status trackingNo decaypromptReusable saved promptsNo decayconversationAuto-saved session summaries30 daysreferenceStable reference docsNo decay
 
-**Zikra — PostgreSQL + pgvector + n8n (recommended for teams):**
-Fetch https://raw.githubusercontent.com/getzikra/zikra/main/prompts/g_zikra.md and follow every instruction in it.
+Architecture
+┌─────────────────────────────────────────────────────────┐
+│                        Zikra                            │
+│                                                         │
+│  FastAPI ──▶ n8n workflows ──▶ PostgreSQL + pgvector    │
+│     │                                ▲                  │
+│     └──────── MCP server ────────────┘                  │
+│                    │                                    │
+│            Role-based auth                              │
+│         (owner / collaborator / guest)                  │
+└─────────────────────────────────────────────────────────┘
 
-**Zikra Lite — SQLite + FastAPI, ready in 60 seconds (great for solo or small teams):**
-Fetch https://raw.githubusercontent.com/getzikra/zikra-lite/main/prompts/g_zikra_lite.md and follow every instruction in it.
+PostgreSQL + pgvector — persistent storage with native vector similarity search
+n8n — workflow automation, scheduled decay jobs, cron-based hygiene
+FastAPI — REST API + MCP server endpoint
+Cloudflare tunnel — optional secure public access for remote team members
 
-Both variants have the same full feature set and identical API surface. 
-The difference is infrastructure — SQLite vs PostgreSQL. 
-**Upgrade from Lite to Full is one URL change.**
 
----
+Why Self-Hosted?
 
-## Zikra vs Zikra Lite
+Your data stays yours. No SaaS, no third-party storage, no vendor lock-in.
+Works on-premise or on any VPS. Docker Compose gets it running in one command.
+Free forever. MIT license. No usage limits. No per-seat pricing.
+Extend it. The API is fully open. Add your own memory types, decay rules, or integrations.
 
-| | **Zikra** | **Zikra Lite** |
-|---|---|---|
-| Backend | PostgreSQL + pgvector | SQLite |
-| Concurrent team writes | ✅ Unlimited | Limited |
-| Scale | Billions of rows | Millions of rows |
-| n8n workflows + scheduling | ✅ | ❌ |
-| Automated decay via cron | ✅ | Manual |
-| Setup time | 30–60 min | ✅ 60 seconds |
-| All memory features | ✅ | ✅ |
-| Full API surface | ✅ | ✅ |
-| Free | ✅ MIT | ✅ MIT |
 
----
+Repo
+ResourceLinkGitHubgetzikra/zikraDocs & onboardingzikra.devLicenseMIT
 
-## Repos
-
-| Repo | Description |
-|---|---|
-| [getzikra/zikra](https://github.com/getzikra/zikra) | Full stack: PostgreSQL + pgvector + n8n + MCP server |
-| [getzikra/zikra-lite](https://github.com/getzikra/zikra-lite) | Lightweight: SQLite + FastAPI + MCP server |
-| [zikra.dev](https://zikra.dev) | Docs and onboarding |
-
----
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Stars — Zikra](https://img.shields.io/github/stars/getzikra/zikra?style=flat&label=zikra%20stars)](https://github.com/getzikra/zikra)
-[![Stars — Zikra Lite](https://img.shields.io/github/stars/getzikra/zikra-lite?style=flat&label=zikra-lite%20stars)](https://github.com/getzikra/zikra-lite)
-[![Last Commit](https://img.shields.io/github/last-commit/getzikra/zikra)](https://github.com/getzikra/zikra/commits/main)
-
----
-
-*One memory. Every agent. Every team member.*
+Keywords
+shared AI memory · Claude Code memory · Gemini CLI memory · AI agent context · persistent LLM memory · self-hosted AI memory · MCP memory server · cross-agent memory · team AI context · pgvector memory · AI coding tools memory sharing · Codex shared memory · OpenAI Codex context · Claude Code context persistence
